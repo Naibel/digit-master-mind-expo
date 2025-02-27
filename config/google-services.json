@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "225882380924",
+    "project_id": "digitmastermindnative",
+    "storage_bucket": "digitmastermindnative.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225882380924:android:239c8696bf3e50ccbb87f9",
+        "android_client_info": {
+          "package_name": "com.digitmastermindnative"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3K742Epnjhjpd14yti8zXE-1GbsUEqTg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
