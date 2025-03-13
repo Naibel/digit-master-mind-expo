@@ -11,7 +11,7 @@ const SuccessEndScreen = ({ adversaryNumber }: { adversaryNumber: number }) => (
           alignSelf: "center",
           marginBottom: 20,
         }}
-        source={require("../../../assets/images/trophy_with_text.png")}
+        source={require("@/assets/images/trophy_with_text.png")}
       />
       <Text style={endStyles.subtitle}>
         Le numéro de votre adversaire était bien

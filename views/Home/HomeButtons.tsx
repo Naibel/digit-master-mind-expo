@@ -1,7 +1,7 @@
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { buttonStyle } from "../../styles/buttons";
-import { ModalType } from "./Home";
+import { ModalType } from "@/app";
 
 const HomeButtons = ({ onPress }: { onPress: (value: ModalType) => void }) => (
   <>

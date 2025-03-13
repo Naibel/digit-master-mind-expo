@@ -27,14 +27,14 @@ const Attempts = ({ userData }: { userData: any }) => {
               <Text style={{ fontWeight: "bold" }}>{attempt.cows}</Text>
               <Image
                 style={{ width: 23, height: 23 }}
-                source={require("../../../assets/images/cows_list.png")}
+                source={require("@/assets/images/cows_list.png")}
               />
             </Text>
             <Text style={attempsStyles.bulls}>
               <Text style={{ fontWeight: "bold" }}>{attempt.bulls}</Text>
               <Image
                 style={{ width: 23, height: 23 }}
-                source={require("../../../assets/images/bulls_list.png")}
+                source={require("@/assets/images/bulls_list.png")}
               />
             </Text>
           </View>
