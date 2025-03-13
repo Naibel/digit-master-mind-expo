@@ -46,10 +46,25 @@
           }
         }
       ],
-      ["expo-font", { "fonts": ["./assets/fonts/AutourOne-Regular.ttf"] }]
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/AutourOne-Regular.ttf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b5d27b4f-c03d-44fe-8c77-47aa350073be"
+      }
     }
   }
 }
