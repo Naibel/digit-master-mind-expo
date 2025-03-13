@@ -45,7 +45,8 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      ["expo-font", { "fonts": ["./assets/fonts/AutourOne-Regular.ttf"] }]
     ],
     "experiments": {
       "typedRoutes": true

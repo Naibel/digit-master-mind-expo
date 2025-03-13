@@ -4927,7 +4927,7 @@ __metadata:
     expo-blur: "npm:~14.0.2"
     expo-build-properties: "npm:~0.13.2"
     expo-constants: "npm:~17.0.4"
-    expo-font: "npm:~13.0.3"
+    expo-font: "npm:~13.0.4"
     expo-haptics: "npm:~14.0.1"
     expo-linking: "npm:~7.0.4"
     expo-router: "npm:~4.0.17"
@@ -5375,7 +5375,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:~13.0.3, expo-font@npm:~13.0.4":
+"expo-font@npm:~13.0.4":
   version: 13.0.4
   resolution: "expo-font@npm:13.0.4"
   dependencies:
