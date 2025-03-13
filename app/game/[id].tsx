@@ -6,7 +6,12 @@ import {
   Text,
   View,
 } from "react-native";
-import firestore from "@react-native-firebase/firestore";
+import {
+  doc,
+  getDoc,
+  getFirestore,
+  updateDoc,
+} from "@react-native-firebase/firestore";
 
 import usePlay from "../../hooks/usePlay";
 import { UserBStartGameModal } from "../../views/Home/modals";
@@ -18,9 +23,16 @@ import RetryButton from "../../views/GameScreen/RetryButton";
 import GradientBackground from "@/components/GradientBackground";
 import DigitInput from "@/components/DigitInput";
 import Keyboard from "@/components/Keyboard";
+import { useLocalSearchParams } from "expo-router";
 
-const GameScreen = ({ route, navigation }: any) => {
+const GameScreen = ({ navigation }: any) => {
   const { play } = usePlay();
+  const { id, mode } = useLocalSearchParams<
+    "game/[id]",
+    {
+      mode: string;
+    }
+  >();
 
   const [finished, setFinished] = useState<boolean>(false);
   const [timeleft, setTimeleft] = useState<number>(10);
@@ -29,8 +41,8 @@ const GameScreen = ({ route, navigation }: any) => {
   const [currentGame, setCurrentGame] = useState<any>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const games = firestore().collection("games");
-  const { id, mode } = route.params;
+  const db = getFirestore();
+  const gameRef = doc(db, "games", id);
 
   const notYourTurn =
     (mode === "join" && turn === "a") || (mode === "start" && turn === "b");
@@ -44,7 +56,7 @@ const GameScreen = ({ route, navigation }: any) => {
     mode === "start" ? currentGame.b_digit : currentGame.a_digit;
 
   const startTurn = () => {
-    const timer = setInterval(() => {
+    const timer = setInterval(async () => {
       if (turn === (mode === "join" ? "a" : "b")) {
         setTimeleft(0);
         clearInterval(timer);
@@ -54,7 +66,7 @@ const GameScreen = ({ route, navigation }: any) => {
       setTimeleft(newCount >= 0 ? newCount : 0);
       console.log("tt ", timeleft);
       if (timeleft === 0) {
-        games.doc(id).update({ turn: mode === "join" ? "a" : "b" });
+        await updateDoc(gameRef, { turn: mode === "join" ? "a" : "b" });
         clearInterval(timer);
       }
     }, 1000);
@@ -69,75 +81,68 @@ const GameScreen = ({ route, navigation }: any) => {
     }
   }, [turn]);
 
-  useEffect(() => {
-    let unsubscribe = games.doc(id).onSnapshot((doc) => {
-      mode === "join" && doc.data()?.isOpen && setIsModalOpen(true);
+  const initGame = async () => {
+    const doc = await getDoc(gameRef);
 
-      setCurrentGame(doc.data());
+    mode === "join" && doc.data()?.isOpen && setIsModalOpen(true);
 
-      if (mode === "join") {
-        if (!doc.data()?.b_attempts) {
-          games.doc(id).update({
-            b_attempts: [],
-          });
-        }
-      } else if (mode === "start") {
-        if (!doc.data()?.a_attempts) {
-          games.doc(id).update({
-            a_attempts: [],
-          });
-        }
+    setCurrentGame(doc.data());
+
+    if (mode === "join") {
+      if (!doc.data()?.b_attempts) {
+        await updateDoc(gameRef, {
+          b_attempts: [],
+        });
       }
+    } else if (mode === "start") {
+      if (!doc.data()?.a_attempts) {
+        await updateDoc(gameRef, {
+          a_attempts: [],
+        });
+      }
+    }
 
-      setTurn(doc.data()?.turn);
-      setFinished(doc.data()?.finished);
-    });
+    setTurn(doc.data()?.turn);
+    setFinished(doc.data()?.finished);
+  };
 
-    return () => {
-      unsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    initGame();
   }, []);
 
-  const handleAttempt = () => {
+  const handleAttempt = async () => {
     if (mode === "join") {
-      games
-        .doc(id)
-        .update({
-          b_attempts: [
-            ...currentGame.b_attempts,
-            {
-              ...play(attempt, currentGame.a_digit),
-              attempt,
-            },
-          ],
-          finished: attempt.toString() === currentGame.a_digit.toString(),
-          b_win: attempt.toString() === currentGame.a_digit.toString(),
-          turn: "a",
-        })
-        .then(() => {
-          setAttempt("");
-          setTimeleft(10);
-        });
+      await updateDoc(gameRef, {
+        b_attempts: [
+          ...currentGame.b_attempts,
+          {
+            ...play(attempt, currentGame.a_digit),
+            attempt,
+          },
+        ],
+        finished: attempt.toString() === currentGame.a_digit.toString(),
+        b_win: attempt.toString() === currentGame.a_digit.toString(),
+        turn: "a",
+      });
+
+      setAttempt("");
+      setTimeleft(10);
     } else {
-      games
-        .doc(id)
-        .update({
-          a_attempts: [
-            ...currentGame.a_attempts,
-            {
-              ...play(attempt, currentGame.b_digit),
-              attempt,
-            },
-          ],
-          finished: attempt.toString() === currentGame.b_digit.toString(),
-          a_win: attempt.toString() === currentGame.b_digit.toString(),
-          turn: "b",
-        })
-        .then(() => {
-          setAttempt("");
-          setTimeleft(10);
-        });
+      await updateDoc(gameRef, {
+        a_attempts: [
+          ...currentGame.a_attempts,
+          {
+            ...play(attempt, currentGame.b_digit),
+            attempt,
+          },
+        ],
+        finished: attempt.toString() === currentGame.b_digit.toString(),
+        a_win: attempt.toString() === currentGame.b_digit.toString(),
+        turn: "b",
+      });
+
+      setAttempt("");
+      setTimeleft(10);
     }
   };
 
@@ -267,8 +272,6 @@ const GameScreen = ({ route, navigation }: any) => {
       </ImageBackground>
       {mode === "join" && (
         <UserBStartGameModal
-          route={route}
-          navigation={navigation}
           visible={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);

@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import firestore from "@react-native-firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getFirestore,
+} from "@react-native-firebase/firestore";
 
-import { buttonStyle } from "../../../styles/buttons";
-import { textStyle } from "../../../styles/text";
-import checkDigit from "../../../utils/checkDigit";
+import { buttonStyle } from "@/styles/buttons";
+import { textStyle } from "@/styles/text";
+import checkDigit from "@/utils/checkDigit";
 import Modal from "@/components/Modal";
 import DigitInput from "@/components/DigitInput";
 import { router } from "expo-router";
@@ -21,25 +25,24 @@ const UserAStartGameModal = ({
   const [value, setValue] = useState<string>("");
   const isDisabled = value.length < 4;
 
-  const games = firestore().collection("games");
+  const onPress = async () => {
+    const db = getFirestore();
 
-  const onPress = () => {
-    games
-      .add({
+    try {
+      const docRef = await addDoc(collection(db, "games"), {
         isOpen: true,
         a_digit: value,
-      })
-      .then((docRef) => {
-        // router.push("./game", { params: { id: docRef.id, mode: "start" } });
+      });
 
-        // navigation.navigate("GameScreen", {
-        //   id: docRef.id,
-        //   mode: "start",
-        // });
-        console.log(docRef.id);
-        onClose();
-      })
-      .catch((error) => console.error("Error adding Tutorial: ", error));
+      router.push({
+        pathname: "/game/[id]",
+        params: { id: docRef.id, mode: "start" },
+      });
+      console.log(docRef.id);
+      onClose();
+    } catch (error) {
+      console.error("Error adding Document: ", error);
+    }
   };
 
   const onChange = (newDigit: string) => {

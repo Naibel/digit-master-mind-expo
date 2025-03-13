@@ -1,40 +1,41 @@
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import firestore from "@react-native-firebase/firestore";
+import { doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 
-import { buttonStyle } from "../../../styles/buttons";
-import { textStyle } from "../../../styles/text";
-import checkDigit from "../../../utils/checkDigit";
+import { buttonStyle } from "@/styles/buttons";
+import { textStyle } from "@/styles/text";
+import checkDigit from "@/utils/checkDigit";
 import Modal from "@/components/Modal";
 import DigitInput from "@/components/DigitInput";
+import { router, useLocalSearchParams } from "expo-router";
 
 export type UserBGameModalProps = {
-  route: any;
-  navigation: any;
   visible: boolean;
   onClose: () => void;
 };
 
-const UserBGameModal = ({
-  route,
-  navigation,
-  visible,
-  onClose,
-}: UserBGameModalProps) => {
-  const { id } = route.params;
+const UserBGameModal = ({ visible, onClose }: UserBGameModalProps) => {
+  const { id } = useLocalSearchParams<"game/[id]">();
 
   const [value, setValue] = useState<string>("");
   const isDisabled = value.length < 4;
 
-  const games = firestore().collection("games");
-
   //Only when joining a game
-  const onPress = () => {
-    games.doc(id).update({
-      isOpen: false,
-      b_digit: value,
-    });
-    onClose();
+  const onPress = async () => {
+    const db = getFirestore();
+
+    const gameRef = doc(db, "games", id);
+
+    try {
+      await updateDoc(gameRef, {
+        isOpen: true,
+        a_digit: value,
+      });
+
+      onClose();
+    } catch (error) {
+      console.error("Error adding Document: ", error);
+    }
   };
 
   const onChange = (newDigit: string) => {
@@ -46,7 +47,7 @@ const UserBGameModal = ({
   const onModalClose = () => {
     setValue("");
     onClose();
-    navigation.goBack();
+    router.back();
   };
 
   return (

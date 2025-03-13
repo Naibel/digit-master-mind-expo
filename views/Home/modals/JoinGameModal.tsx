@@ -1,45 +1,48 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Text, TouchableOpacity, ScrollView } from "react-native";
-import firestore from "@react-native-firebase/firestore";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+} from "@react-native-firebase/firestore";
 
-import { buttonStyle } from "../../../styles/buttons";
-import { textStyle } from "../../../styles/text";
+import { buttonStyle } from "@/styles/buttons";
+import { textStyle } from "@/styles/text";
 import Modal, { ModalProps } from "@/components/Modal";
+import { router } from "expo-router";
 
 const JoinGameModal = ({ visible, onClose }: ModalProps) => {
-  const games = firestore().collection("games");
+  const db = getFirestore();
   const [openGames, setOpenGames] = useState<any[]>([]);
 
-  useEffect(() => {
-    let unsubscribe = games.onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          console.log("New game: ", change.doc.id, change.doc.data());
-          change.doc.data().isOpen &&
-            setOpenGames([
-              {
-                id: change.doc.id,
-                ...change.doc.data(),
-              },
-              ...openGames,
-            ]);
-        }
-        if (change.type === "modified") {
-          console.log("Modified game: ", change.doc.id, change.doc.data());
-          !change.doc.data().isOpen &&
-            setOpenGames(openGames.filter((game) => game.id !== change.doc.id));
-        }
-        if (change.type === "removed") {
-          console.log("Removed game: ", change.doc.id, change.doc.data());
+  const getCurrentGames = useCallback(async () => {
+    const gamesSnapshot = await getDocs(collection(db, "games"));
+    gamesSnapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        console.log("New game: ", change.doc.id, change.doc.data());
+        change.doc.data().isOpen &&
+          setOpenGames([
+            {
+              id: change.doc.id,
+              ...change.doc.data(),
+            },
+            ...openGames,
+          ]);
+      }
+      if (change.type === "modified") {
+        console.log("Modified game: ", change.doc.id, change.doc.data());
+        !change.doc.data().isOpen &&
           setOpenGames(openGames.filter((game) => game.id !== change.doc.id));
-        }
-      });
+      }
+      if (change.type === "removed") {
+        console.log("Removed game: ", change.doc.id, change.doc.data());
+        setOpenGames(openGames.filter((game) => game.id !== change.doc.id));
+      }
     });
+  }, []);
 
-    return () => {
-      unsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    getCurrentGames();
   }, []);
 
   return (
@@ -59,10 +62,13 @@ const JoinGameModal = ({ visible, onClose }: ModalProps) => {
                   { marginBottom: 20 },
                 ]}
                 onPress={() => {
-                  // navigation.navigate("GameScreen", {
-                  //   id: game.id,
-                  //   mode: "join",
-                  // });
+                  router.push({
+                    pathname: "/game/[id]",
+                    params: {
+                      id: game.id,
+                      mode: "join",
+                    },
+                  });
                   onClose();
                 }}
               >
